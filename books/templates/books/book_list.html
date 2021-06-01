@@ -1,0 +1,119 @@
+{% extends 'books/base_books.html' %}
+{% block content %}
+<div class="wrapper row3" id="app">
+  <main class="container clear"> 
+    <!-- main body --> 
+    <!-- ################################################################################################ -->
+    <div class="col-sm-8">
+    <div class="content">
+      <!-- ################################################################################################ -->
+      <div id="gallery">
+        <figure>
+          <header class="heading">총 <span style="color:red;font-size:30px">[[count]]</span>개의 맛있는 레시피가 있습니다.</header>
+          <ul class="nospace clear">
+            <li class="one_quarter" v-for="r in recipe"><img :src="r.poster" v-on:click="recipe_change(r.no)"></li>
+          </ul>
+          <figcaption>Gallery Description Goes Here</figcaption>
+        </figure>
+      </div>
+
+      <!-- ################################################################################################ --> 
+      <!-- ################################################################################################ -->
+        <div class="text-center">
+          <button class="btn btn-sm btn-danger" v-on:click="prev()">Previous</button>
+          [[curpage]] page / [[totalpage]] pages
+          <button class="btn btn-sm btn-danger" v-on:click="next()">Next</button>
+        </div>
+
+    </div>
+      <div class="col-sm-4">
+          <table class="table">
+            <tr>
+              <td>
+                <img :src="recipe_detail.poster" width="100%">
+              </td>
+            </tr>
+            <tr>
+              <td class="text-center">[[recipe_detail.title]]</td>
+            </tr>
+            <tr>
+              <td class="text-center">[[recipe_detail.content]]</td>
+            </tr>
+          </table>
+      </div>
+      <!-- ################################################################################################ --> 
+       <script>
+         new Vue({
+            delimiters: ['[[', ']]'],
+            el:'#app',
+            data:{
+               recipe:[],
+               curpage:1,
+               totalpage:0,
+               count:0,
+               startPage:0,
+               endPage:0,
+               recipe_detail:{},
+               no:0
+            },
+            methods:{
+                recipe_change:function(no){
+                    axios.get('http://localhost/web/recipe/detail.do',{
+                        params:{
+                           no:no
+                        }
+                    }).then(response=>{
+                        this.recipe_detail=response.data
+                        console.log(this.recipe_detail)
+                    });
+                },
+                prev:function(){
+                this.curpage=this.curpage>1?this.curpage-1:this.curpage
+                axios.get('http://localhost/web/recipe/recipe_list.do',{
+                  params:{
+                     page:this.curpage
+                  }
+               }).then(response=>{
+                   this.recipe=response.data
+                   console.log(this.recipe)
+                   this.count=this.recipe[0].count
+               });
+            },
+            next:function(){
+              this.curpage=this.curpage<this.totalpage?this.curpage+1:this.curpage
+               axios.get('http://localhost/web/recipe/recipe_list.do',{
+                  params:{
+                     page:this.curpage
+                  }
+               }).then(response=>{
+                   this.recipe=response.data
+                   console.log(this.recipe)
+                   this.count=this.recipe[0].count
+               });
+            }
+            },
+            mounted:function(){
+               axios.get('http://localhost/web/recipe/recipe_list.do',{
+                  params:{
+                     page:this.curpage
+                  }
+               }).then(response=>{
+                   this.recipe=response.data
+                   console.log(this.recipe)
+                   this.count=this.recipe[0].count
+                   console.log(this.count)
+                   this.curpage=this.recipe[0].curpage
+                   this.totalpage=this.recipe[0].totalpage
+
+               });
+            },
+
+         });
+       </script>
+    </div>
+    <!-- ################################################################################################ --> 
+    <!-- / main body -->
+    <div class="clear"></div>
+  </main>
+</div>
+{% endblock %}
